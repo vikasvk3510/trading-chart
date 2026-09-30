@@ -16,7 +16,7 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist", "chart.html", "README.md", "PUBLISH.md"],
+  "files": ["dist", "chart.html", "README.md", "PUBLISH.md", "USAGE.md"],
   "keywords": ["react-native", "webview", "klinechart", "bybit", "candlestick"],
   "repository": {
     "type": "git",

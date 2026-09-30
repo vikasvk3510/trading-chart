@@ -4,6 +4,8 @@ A chart library for React, React Native, and native WebView hosts. The candles, 
 
 TradingView Advanced Charts is not used, and the TradingView mark is not drawn.
 
+Copy-paste React Native setup is in [USAGE.md](./USAGE.md).
+
 ## Packages
 
 | Package | Use |
