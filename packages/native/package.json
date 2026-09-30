@@ -1,0 +1,45 @@
+{
+  "name": "tradingcandle-react-native",
+  "version": "0.1.1",
+  "description": "React Native trading chart. The Bybit-style UI runs inside react-native-webview from one inline HTML file.",
+  "author": "vknpms",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist", "chart.html", "README.md", "PUBLISH.md"],
+  "keywords": ["react-native", "webview", "klinechart", "bybit", "candlestick"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vikasvk3510/trading-chart.git",
+    "directory": "packages/native"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-native": ">=0.71",
+    "react-native-webview": ">=13"
+  },
+  "devDependencies": {
+    "@talkwallet/chart-core": "workspace:*",
+    "@talkwallet/chart-webview": "workspace:*",
+    "@types/react": "^18.3.24",
+    "react": "^18.3.1",
+    "react-native": "^0.76.5",
+    "react-native-webview": "^13.12.5",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2"
+  }
+}

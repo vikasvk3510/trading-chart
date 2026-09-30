@@ -1,0 +1,13 @@
+node_modules
+dist
+.turbo
+*.log
+.DS_Store
+.expo
+coverage
+*.tgz
+.changeset/*.md
+!.changeset/README.md
+examples/rn-demo/.expo
+examples/rn-demo/ios
+examples/rn-demo/android

@@ -1,0 +1,54 @@
+{
+  "name": "@talkwallet/chart-web",
+  "version": "0.1.0",
+  "private": false,
+  "description": "React trading chart with Bybit-style controls, built on KLineChart.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./engine": {
+      "types": "./dist/engine.d.ts",
+      "import": "./dist/engine.js",
+      "require": "./dist/engine.cjs"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "keywords": ["react", "klinechart", "bybit", "candlestick", "trading"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vikasvk3510/trading-chart.git",
+    "directory": "packages/web"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup && tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "dependencies": {
+    "@talkwallet/chart-core": "workspace:*",
+    "klinecharts": "^10.0.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.24",
+    "@types/react-dom": "^18.3.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2"
+  }
+}

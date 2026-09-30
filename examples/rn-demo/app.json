@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "Bybit Chart Demo",
+    "slug": "bybit-chart-demo",
+    "version": "0.1.0",
+    "orientation": "default",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": false,
+    "ios": { "supportsTablet": true },
+    "android": {
+      "softwareKeyboardLayoutMode": "resize"
+    }
+  }
+}

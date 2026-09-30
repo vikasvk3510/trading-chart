@@ -1,0 +1,45 @@
+{
+  "name": "@talkwallet/chart-core",
+  "version": "0.1.0",
+  "description": "Candle types, Bybit and Binance converters, and the trading-chart bridge protocol.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "keywords": [
+    "bybit",
+    "kline",
+    "ohlcv",
+    "candlestick",
+    "trading-chart",
+    "tradingview"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vikasvk3510/trading-chart.git",
+    "directory": "packages/core"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean --treeshake",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
