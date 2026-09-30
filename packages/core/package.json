@@ -1,5 +1,5 @@
 {
-  "name": "@talkwallet/chart-core",
+  "name": "tradingcandle-core",
   "version": "0.1.0",
   "description": "Candle types, Bybit and Binance converters, and the trading-chart bridge protocol.",
   "license": "Apache-2.0",
@@ -28,9 +28,6 @@
     "type": "git",
     "url": "git+https://github.com/vikasvk3510/trading-chart.git",
     "directory": "packages/core"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --clean --treeshake",

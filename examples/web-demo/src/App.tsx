@@ -10,8 +10,8 @@ import {
   parseBybitSocketPayload,
   type Candle,
   type Interval,
-} from '@talkwallet/chart-core';
-import { TradingChart, type TradingChartHandle } from '@talkwallet/chart-web';
+} from 'tradingcandle-core';
+import { TradingChart, type TradingChartHandle } from 'tradingcandle-web';
 
 const SYMBOL = 'BTCUSDT';
 

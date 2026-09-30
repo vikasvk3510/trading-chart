@@ -10,7 +10,7 @@ import {
   type Interval,
   type MagnetMode,
   type ScaleMode,
-} from '@talkwallet/chart-core';
+} from 'tradingcandle-core';
 import {
   dispose,
   init,

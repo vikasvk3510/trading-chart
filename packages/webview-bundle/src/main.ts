@@ -1,6 +1,6 @@
-import { DEFAULT_COLORS, decodeMessage, encodeMessage, isHostMessage } from '@talkwallet/chart-core';
-import { createTradingChart, type TradingChartApi } from '@talkwallet/chart-web/engine';
-import type { BridgeMessage, ChartToHostMessage, HostToChartMessage } from '@talkwallet/chart-core';
+import { DEFAULT_COLORS, decodeMessage, encodeMessage, isHostMessage } from 'tradingcandle-core';
+import { createTradingChart, type TradingChartApi } from 'tradingcandle-web/engine';
+import type { BridgeMessage, ChartToHostMessage, HostToChartMessage } from 'tradingcandle-core';
 
 type HostWindow = Window & {
   ReactNativeWebView?: { postMessage: (message: string) => void };

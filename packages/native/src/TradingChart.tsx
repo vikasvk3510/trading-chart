@@ -23,7 +23,7 @@ import {
   type Interval,
   type ScaleMode,
   type ThemeName,
-} from '@talkwallet/chart-core';
+} from 'tradingcandle-core';
 import { chartHtml } from './chartHtml';
 
 export type { Candle, Interval };

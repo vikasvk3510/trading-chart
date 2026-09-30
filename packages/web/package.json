@@ -1,5 +1,5 @@
 {
-  "name": "@talkwallet/chart-web",
+  "name": "tradingcandle-web",
   "version": "0.1.0",
   "private": false,
   "description": "React trading chart with Bybit-style controls, built on KLineChart.",
@@ -28,9 +28,6 @@
     "url": "git+https://github.com/vikasvk3510/trading-chart.git",
     "directory": "packages/web"
   },
-  "publishConfig": {
-    "access": "public"
-  },
   "scripts": {
     "build": "tsup && tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit"
@@ -40,7 +37,7 @@
     "react-dom": ">=18"
   },
   "dependencies": {
-    "@talkwallet/chart-core": "workspace:*",
+    "tradingcandle-core": "workspace:*",
     "klinecharts": "^10.0.3"
   },
   "devDependencies": {

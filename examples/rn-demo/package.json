@@ -9,7 +9,7 @@
     "ios": "expo start --ios"
   },
   "dependencies": {
-    "@talkwallet/chart-core": "workspace:*",
+    "tradingcandle-core": "workspace:*",
     "tradingcandle-react-native": "workspace:*",
     "expo": "~52.0.47",
     "react": "18.3.1",

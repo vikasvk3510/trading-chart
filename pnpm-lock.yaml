@@ -32,7 +32,7 @@ importers:
       tradingcandle-react-native:
         specifier: workspace:*
         version: link:../../packages/native
-      '@talkwallet/chart-core':
+      'tradingcandle-core':
         specifier: workspace:*
         version: link:../../packages/core
       expo:
@@ -57,10 +57,10 @@ importers:
 
   examples/web-demo:
     dependencies:
-      '@talkwallet/chart-core':
+      'tradingcandle-core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@talkwallet/chart-web':
+      'tradingcandle-web':
         specifier: workspace:*
         version: link:../../packages/web
       react:
@@ -100,10 +100,10 @@ importers:
 
   packages/native:
     devDependencies:
-      '@talkwallet/chart-core':
+      'tradingcandle-core':
         specifier: workspace:*
         version: link:../core
-      '@talkwallet/chart-webview':
+      'tradingcandle-webview':
         specifier: workspace:*
         version: link:../webview-bundle
       '@types/react':
@@ -127,7 +127,7 @@ importers:
 
   packages/web:
     dependencies:
-      '@talkwallet/chart-core':
+      'tradingcandle-core':
         specifier: workspace:*
         version: link:../core
       klinecharts:
@@ -155,10 +155,10 @@ importers:
 
   packages/webview-bundle:
     dependencies:
-      '@talkwallet/chart-core':
+      'tradingcandle-core':
         specifier: workspace:*
         version: link:../core
-      '@talkwallet/chart-web':
+      'tradingcandle-web':
         specifier: workspace:*
         version: link:../web
       klinecharts:

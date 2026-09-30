@@ -1,4 +1,4 @@
-import type { ChartColors, ChartType, ThemeName } from '@talkwallet/chart-core';
+import type { ChartColors, ChartType, ThemeName } from 'tradingcandle-core';
 import type { DeepPartial, Styles } from 'klinecharts';
 
 const GRID_DARK = '#1e2329';

@@ -10,14 +10,14 @@ Copy-paste React Native setup is in [USAGE.md](./USAGE.md).
 
 | Package | Use |
 | --- | --- |
-| `@talkwallet/chart-core` | Candle type, Bybit/Binance converters, bridge messages |
-| `@talkwallet/chart-web` | React component for the browser and Next.js |
+| `tradingcandle-core` | Candle type, Bybit/Binance converters, bridge messages |
+| `tradingcandle-web` | React component for the browser and Next.js |
 | `tradingcandle-react-native` | React Native component. One inline HTML file, no network to boot the chart |
 
 ## Install
 
 ```bash
-npm install @talkwallet/chart-core @talkwallet/chart-web
+npm install tradingcandle-core tradingcandle-web
 # React Native
 npm install tradingcandle-react-native react-native-webview
 ```
@@ -28,8 +28,8 @@ Peer dependencies: `react` and `react-dom` for web. `react`, `react-native`, and
 
 ```tsx
 import { useEffect, useState } from 'react';
-import { fromBybit, bybitKlineUrl, type Candle } from '@talkwallet/chart-core';
-import { TradingChart } from '@talkwallet/chart-web';
+import { fromBybit, bybitKlineUrl, type Candle } from 'tradingcandle-core';
+import { TradingChart } from 'tradingcandle-web';
 
 export function Chart() {
   const [data, setData] = useState<Candle[]>([]);
@@ -64,7 +64,7 @@ export function Chart() {
 }
 ```
 
-The parent must give the chart a height. Importing `@talkwallet/chart-web` does not touch `window` or `document`. KLineChart loads after mount, so the component is safe to import from a Next.js server component tree as long as you render it on the client.
+The parent must give the chart a height. Importing `tradingcandle-web` does not touch `window` or `document`. KLineChart loads after mount, so the component is safe to import from a Next.js server component tree as long as you render it on the client.
 
 Live bars should go through the ref, so the chart updates the last candle instead of reloading history:
 
@@ -142,7 +142,7 @@ Chart to host:
 `ready`, `intervalChange`, `loadMore`, `crosshair`, `screenshot`, `fullscreen`, `error`
 
 ```ts
-import { encodeMessage, decodeMessage } from '@talkwallet/chart-core';
+import { encodeMessage, decodeMessage } from 'tradingcandle-core';
 ```
 
 The page posts with, in order: `window.ReactNativeWebView.postMessage`, `webkit.messageHandlers.chart.postMessage`, `ChartBridge.postMessage`, then `window.parent.postMessage`. The host delivers a message by calling `window.__twChartReceive(json)`. React Native also delivers through the `message` event inside the page.
@@ -197,15 +197,15 @@ From this repo:
 
 ```bash
 pnpm install
-pnpm --filter @talkwallet/chart-core test
-pnpm --filter @talkwallet/chart-web build
+pnpm --filter tradingcandle-core test
+pnpm --filter tradingcandle-web build
 pnpm --filter web-demo dev
 ```
 
 Open the Vite URL. The demo loads Bybit spot klines and subscribes to `wss://stream.bybit.com/v5/public/spot`.
 
 ```bash
-pnpm --filter @talkwallet/chart-webview build
+pnpm --filter tradingcandle-webview build
 pnpm --filter tradingcandle-react-native build
 pnpm --filter rn-demo start
 ```

@@ -1,4 +1,4 @@
-import { INTERVALS, RANGE_MS, RANGE_PRESETS } from '@talkwallet/chart-core';
+import { INTERVALS, RANGE_MS, RANGE_PRESETS } from 'tradingcandle-core';
 
 export const CHART_STYLE_ID = 'twc-chart-styles';
 

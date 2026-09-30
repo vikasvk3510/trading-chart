@@ -7,7 +7,7 @@ import type {
   Interval,
   ScaleMode,
   ThemeName,
-} from '@talkwallet/chart-core';
+} from 'tradingcandle-core';
 
 export type TradingChartOptions = {
   symbol: string;

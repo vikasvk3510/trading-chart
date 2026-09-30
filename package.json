@@ -10,12 +10,12 @@
   },
   "scripts": {
     "build": "pnpm -r --filter \"./packages/*\" run build",
-    "test": "pnpm --filter @talkwallet/chart-core test",
+    "test": "pnpm --filter tradingcandle-core test",
     "lint": "eslint \"packages/**/src/**/*.{ts,tsx}\" \"examples/web-demo/src/**/*.{ts,tsx}\"",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r --filter \"./packages/*\" --filter web-demo run typecheck",
-    "pack:check": "pnpm --filter @talkwallet/chart-core --filter @talkwallet/chart-web --filter tradingcandle-react-native exec npm pack --dry-run",
+    "pack:check": "pnpm --filter tradingcandle-core --filter tradingcandle-web --filter tradingcandle-react-native exec npm pack --dry-run",
     "version-packages": "changeset version",
     "release": "pnpm build && changeset publish"
   },

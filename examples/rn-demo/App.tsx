@@ -11,7 +11,7 @@ import {
   parseBybitSocketPayload,
   type Candle,
   type Interval,
-} from '@talkwallet/chart-core';
+} from 'tradingcandle-core';
 import { TradingChart, type TradingChartHandle } from 'tradingcandle-react-native';
 
 const SYMBOL = 'BTCUSDT';

@@ -7,5 +7,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["web-demo", "rn-demo", "trading-chart", "@talkwallet/chart-webview"]
+  "ignore": ["web-demo", "rn-demo", "trading-chart", "tradingcandle-webview"]
 }

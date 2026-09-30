@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
-import { DEFAULT_COLORS } from '@talkwallet/chart-core';
+import { DEFAULT_COLORS } from 'tradingcandle-core';
 import type { TradingChartApi, TradingChartHandle, TradingChartProps } from './types';
 
 export const TradingChart = forwardRef<TradingChartHandle, TradingChartProps>(function TradingChart(

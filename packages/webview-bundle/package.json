@@ -1,5 +1,5 @@
 {
-  "name": "@talkwallet/chart-webview",
+  "name": "tradingcandle-webview",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -8,8 +8,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@talkwallet/chart-core": "workspace:*",
-    "@talkwallet/chart-web": "workspace:*",
+    "tradingcandle-core": "workspace:*",
+    "tradingcandle-web": "workspace:*",
     "klinecharts": "^10.0.3"
   },
   "devDependencies": {

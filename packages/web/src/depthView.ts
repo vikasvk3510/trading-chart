@@ -1,4 +1,4 @@
-import { formatNumber, type ChartColors, type DepthBook, type DepthLevel } from '@talkwallet/chart-core';
+import { formatNumber, type ChartColors, type DepthBook, type DepthLevel } from 'tradingcandle-core';
 
 type Point = { price: number; size: number };
 

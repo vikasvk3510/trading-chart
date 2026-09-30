@@ -1,4 +1,4 @@
-# @talkwallet/chart-web
+# tradingcandle-web
 
 React trading chart. KLineChart is loaded after mount so importing this package does not touch `document`.
 

@@ -9,8 +9,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@talkwallet/chart-core": "workspace:*",
-    "@talkwallet/chart-web": "workspace:*",
+    "tradingcandle-core": "workspace:*",
+    "tradingcandle-web": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

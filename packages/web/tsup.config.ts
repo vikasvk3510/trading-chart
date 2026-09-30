@@ -7,7 +7,7 @@ export default defineConfig([
     dts: false,
     clean: true,
     treeshake: true,
-    external: ['react', 'react-dom', 'klinecharts', '@talkwallet/chart-core', './engine.js', './engine'],
+    external: ['react', 'react-dom', 'klinecharts', 'tradingcandle-core', './engine.js', './engine'],
     esbuildOptions(options) {
       options.jsx = 'automatic';
     },
@@ -18,6 +18,6 @@ export default defineConfig([
     dts: false,
     clean: false,
     treeshake: true,
-    external: ['klinecharts', '@talkwallet/chart-core'],
+    external: ['klinecharts', 'tradingcandle-core'],
   },
 ]);
