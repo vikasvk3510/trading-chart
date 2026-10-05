@@ -6,6 +6,11 @@ import {
   createOrderBook,
   parseBybitOrderbookMessage,
   bybitKlineUrl,
+  decodeSocketIo,
+  encodeSocketIoEvent,
+  parseFeedData,
+  parseHistoryBody,
+  toWebSocketUrl,
   createUpdateScheduler,
   decodeMessage,
   encodeMessage,
@@ -14,9 +19,48 @@ import {
   legendStats,
   mergeCandle,
   parseBybitSocketPayload,
+  parseColor,
+  resolvePalette,
   sma,
+  withAlpha,
   type Candle,
 } from './index';
+
+describe('palette', () => {
+  const up = '#26a65b';
+  const down = '#e5484d';
+
+  it('uses the theme colors when no override is given', () => {
+    expect(resolvePalette('light', { up, down }).background).toBe('#ffffff');
+    expect(resolvePalette('dark', { up, down }).background).toBe('#0b0e11');
+  });
+
+  it('picks light text on a dark custom background and dark text on a light one', () => {
+    const black = resolvePalette('light', { up, down, background: '#000000' });
+    expect(black.background).toBe('#000000');
+    expect(black.dark).toBe(true);
+    expect(black.text).toBe('#d1d4dc');
+    const mint = resolvePalette('dark', { up, down, background: '#d8f5e3' });
+    expect(mint.dark).toBe(false);
+    expect(mint.text).toBe('#131722');
+  });
+
+  it('keeps explicit text and grid colors', () => {
+    const palette = resolvePalette('dark', { up, down, background: '#0d3b24', text: '#e8fff1', grid: '#1f5c3d' });
+    expect(palette.text).toBe('#e8fff1');
+    expect(palette.grid).toBe('#1f5c3d');
+    expect(palette.border).toBe('#1f5c3d');
+  });
+
+  it('parses hex and rgb colors', () => {
+    expect(parseColor('#0f0')).toEqual([0, 255, 0]);
+    expect(parseColor('rgb(10, 20, 30)')).toEqual([10, 20, 30]);
+    expect(parseColor('red')).toEqual([255, 0, 0]);
+    expect(parseColor('GREEN')).toEqual([0, 128, 0]);
+    expect(parseColor('not-a-color')).toBeNull();
+    expect(withAlpha('#000000', 0.5)).toBe('rgba(0, 0, 0, 0.5)');
+  });
+});
 
 const sample: Candle = {
   time: 1_700_000_000_000,
@@ -202,6 +246,34 @@ describe('order book', () => {
       ],
     });
     expect(bybitOrderbookTopic('ETHUSDT')).toBe('orderbook.50.ETHUSDT');
+  });
+});
+
+describe('custom feed', () => {
+  it('turns a Socket.IO https URL into an Engine.IO websocket', () => {
+    expect(toWebSocketUrl('https://stage-api.trade.graviti.exchange/socket.io/')).toEqual({
+      url: 'wss://stage-api.trade.graviti.exchange/socket.io/?EIO=4&transport=websocket',
+      socketIo: true,
+    });
+    expect(toWebSocketUrl('wss://stream.bybit.com/v5/public/spot').socketIo).toBe(false);
+    expect(decodeSocketIo('0{"sid":"a"}').type).toBe('open');
+    expect(decodeSocketIo('40').type).toBe('connect');
+    expect(decodeSocketIo('2').type).toBe('ping');
+  });
+
+  it('parses candle history and a socket.io kline event', () => {
+    expect(
+      parseHistoryBody({
+        data: [{ time: 2, open: 1, high: 2, low: 1, close: 2, volume: 3 }],
+      }),
+    ).toEqual([{ time: 2, open: 1, high: 2, low: 1, close: 2, volume: 3 }]);
+    const packet = decodeSocketIo(
+      encodeSocketIoEvent('kline', { time: 5, open: 1, high: 3, low: 1, close: 2, volume: 4 }),
+    );
+    expect(packet).toMatchObject({ type: 'event', event: 'kline' });
+    if (packet.type === 'event') {
+      expect(parseFeedData(packet.data)?.candle?.close).toBe(2);
+    }
   });
 });
 

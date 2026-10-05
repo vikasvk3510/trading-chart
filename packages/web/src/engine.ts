@@ -1,5 +1,7 @@
 import {
   DEFAULT_COLORS,
+  CHART_INTERVALS,
+  INTERVALS,
   formatNumber,
   formatSigned,
   legendIntervalLabel,
@@ -22,7 +24,8 @@ import {
 } from 'klinecharts';
 import { paintDepthChart } from './depthView';
 import { registerCustomOverlays } from './overlays';
-import { renderShell } from './shell';
+import { intervalButtons, renderShell } from './shell';
+import { resolvePalette } from 'tradingcandle-core';
 import { chartStyles, screenshotBackground } from './theme';
 import type { TradingChartApi, TradingChartOptions } from './types';
 
@@ -157,9 +160,14 @@ function smaEnding(list: KLineData[], index: number, period: number): number | n
 
 export function createTradingChart(root: HTMLElement, options: TradingChartOptions): TradingChartApi {
   registerCustomOverlays();
-  const ui = renderShell(root);
+  const ui = renderShell(root, options.theme, options.intervals ?? CHART_INTERVALS);
   const state: TradingChartOptions & {
+    intervals: Interval[];
     candles: Candle[];
+    cross: Crosshair | null;
+    crossTime: number | null;
+    crossClose: number | null;
+    hasData: boolean;
     depth: DepthBook;
     tool: string;
     magnet: MagnetMode;
@@ -174,7 +182,12 @@ export function createTradingChart(root: HTMLElement, options: TradingChartOptio
   } = {
     ...options,
     colors: { ...DEFAULT_COLORS, ...options.colors },
+    intervals: (options.intervals ?? CHART_INTERVALS).slice(),
     candles: options.data.slice(),
+    cross: null,
+    crossTime: null,
+    crossClose: null,
+    hasData: false,
     depth: { bids: [], asks: [] },
     tool: 'crosshair',
     magnet: 'normal',
@@ -188,7 +201,6 @@ export function createTradingChart(root: HTMLElement, options: TradingChartOptio
     fullscreen: false,
   };
 
-  ui.shell.dataset.theme = state.theme;
   applyChromeVisibility();
 
   const created = init(ui.canvas, {
@@ -204,6 +216,7 @@ export function createTradingChart(root: HTMLElement, options: TradingChartOptio
     throw new Error(message);
   }
   const chart: Chart = created;
+  applyPalette();
 
   chart.setDataLoader({
     getBars: ({ type, callback }) => {
@@ -247,7 +260,9 @@ export function createTradingChart(root: HTMLElement, options: TradingChartOptio
   });
   chart.setPeriod(periodOf(state.interval));
   chart.subscribeAction('onCrosshairChange', (data) => {
-    paintLegend(data as Crosshair);
+    const cross = data as Crosshair | undefined;
+    state.cross = cross?.kLineData ? cross : null;
+    paintLegend();
   });
   chart.subscribeAction('onScroll', () => placeVolumeLegend());
   chart.subscribeAction('onVisibleRangeChange', () => placeVolumeLegend());
@@ -256,14 +271,16 @@ export function createTradingChart(root: HTMLElement, options: TradingChartOptio
   applyScale(state.scale);
   markActiveInterval();
   markActiveScale();
-  paintLegend(null);
+  ui.shell.classList.toggle('is-depth', state.chartType === 'depth');
+  paintLegend();
   placeVolumeLegend();
+  reportData();
 
   const clockTimer = window.setInterval(tickClock, 1000);
   tickClock();
   const resizeObserver = new ResizeObserver(() => {
     chart.resize();
-    if (state.chartType === 'depth') paintDepthChart(ui.depth, state.depth, state.colors, inferDigits(state.candles));
+    paintDepth();
   });
   resizeObserver.observe(ui.shell);
 
@@ -283,6 +300,28 @@ export function createTradingChart(root: HTMLElement, options: TradingChartOptio
     chart.resize();
   };
   document.addEventListener('fullscreenchange', onFullscreenChange);
+
+  function paintDepth() {
+    if (state.chartType !== 'depth') return;
+    paintDepthChart(
+      ui.depth,
+      state.depth,
+      state.colors,
+      inferDigits(state.candles),
+      resolvePalette(state.theme, state.colors),
+    );
+  }
+
+  function reportData() {
+    const hasData = state.candles.length > 0;
+    if (hasData === state.hasData) return;
+    state.hasData = hasData;
+    state.onDataState?.(hasData, state.candles.length);
+  }
+
+  function clearCrosshair() {
+    state.cross = null;
+  }
 
   function applyChromeVisibility() {
     const top = ui.shell.querySelector<HTMLElement>('[data-part="timeframe"] .twc-intervals');
@@ -330,7 +369,34 @@ export function createTradingChart(root: HTMLElement, options: TradingChartOptio
 
   function applyStyles() {
     chart.setStyles(chartStyles(state.theme, state.colors, state.chartType));
+    applyPalette();
+  }
+
+  function applyPalette() {
     ui.shell.dataset.theme = state.theme;
+    const custom = !!(state.colors.background || state.colors.text || state.colors.grid);
+    const palette = resolvePalette(state.theme, state.colors);
+    const vars: Record<string, string> = {
+      '--twc-up': state.colors.up,
+      '--twc-down': state.colors.down,
+    };
+    if (custom) {
+      Object.assign(vars, {
+        '--twc-bg': palette.background,
+        '--twc-text': palette.text,
+        '--twc-muted': palette.muted,
+        '--twc-border': palette.border,
+        '--twc-panel': palette.panel,
+        '--twc-shadow': palette.dark ? 'rgba(0,0,0,.35)' : 'transparent',
+      });
+    }
+    for (const name of ['--twc-bg', '--twc-text', '--twc-muted', '--twc-border', '--twc-panel', '--twc-shadow', 'background']) {
+      ui.shell.style.removeProperty(name);
+    }
+    for (const [name, value] of Object.entries(vars)) {
+      ui.shell.style.setProperty(name, value, 'important');
+    }
+    if (custom) ui.shell.style.setProperty('background', palette.background, 'important');
   }
 
   function syncIndicators() {
@@ -392,15 +458,25 @@ export function createTradingChart(root: HTMLElement, options: TradingChartOptio
     ui.volumeLegend.style.top = `${paneBox.top - stageBox.top + 6}px`;
   }
 
-  function paintLegend(cross: Crosshair | null) {
+  function emitCrosshair(candle: Candle | null) {
+    const time = candle?.time ?? null;
+    const close = candle?.close ?? null;
+    if (time === state.crossTime && close === state.crossClose) return;
+    state.crossTime = time;
+    state.crossClose = close;
+    state.onCrosshairMove?.(candle);
+  }
+
+  function paintLegend() {
     const list = chart.getDataList();
-    const index =
-      cross?.kLineData && cross.dataIndex != null ? cross.dataIndex : Math.max(0, list.length - 1);
+    const cross = state.cross;
+    const hovered = cross?.kLineData && cross.dataIndex != null && list[cross.dataIndex] != null;
+    const index = hovered && cross?.dataIndex != null ? cross.dataIndex : Math.max(0, list.length - 1);
     const row = list[index];
     if (!row) {
       ui.legend.innerHTML = `<div class="twc-title">${titleText()}</div>`;
       ui.volumeLegend.innerHTML = '';
-      state.onCrosshairMove?.(null);
+      emitCrosshair(null);
       return;
     }
     const candle = fromKLine(row);
@@ -421,7 +497,7 @@ export function createTradingChart(root: HTMLElement, options: TradingChartOptio
     ui.volumeLegend.innerHTML = `Volume <span>SMA ${state.volumeSmaPeriod}</span> <b>${
       volumeSma == null ? '--' : formatNumber(volumeSma, 0)
     }</b>`;
-    state.onCrosshairMove?.(cross?.kLineData ? candle : null);
+    emitCrosshair(hovered ? candle : null);
     placeVolumeLegend();
   }
 
@@ -511,7 +587,9 @@ export function createTradingChart(root: HTMLElement, options: TradingChartOptio
   function handlePopClick(target: Element) {
     const typeBtn = target.closest<HTMLButtonElement>('[data-chart-type]');
     if (typeBtn?.dataset.chartType) {
-      api.setChartType(typeBtn.dataset.chartType as ChartType);
+      const chartType = typeBtn.dataset.chartType as ChartType;
+      api.setChartType(chartType);
+      state.onChartTypeChange?.(chartType);
       closePop();
       return;
     }
@@ -553,7 +631,7 @@ export function createTradingChart(root: HTMLElement, options: TradingChartOptio
       if (Number.isInteger(smaPeriod) && smaPeriod > 0) state.smaPeriod = smaPeriod;
       if (Number.isInteger(volumePeriod) && volumePeriod > 0) state.volumeSmaPeriod = volumePeriod;
       syncIndicators();
-      paintLegend(null);
+      paintLegend();
       closePop();
     }
   }
@@ -664,6 +742,13 @@ export function createTradingChart(root: HTMLElement, options: TradingChartOptio
     link.click();
   }
 
+  function releaseLoadMore() {
+    if (!state.forwardCb) return;
+    state.forwardCb([], false);
+    state.forwardCb = null;
+    state.loadingMore = false;
+  }
+
   function reloadSymbol() {
     chart.setSymbol({
       ticker: state.symbol,
@@ -687,19 +772,18 @@ export function createTradingChart(root: HTMLElement, options: TradingChartOptio
         state.forwardCb = null;
         state.loadingMore = false;
         callback(older, { forward: true, backward: false });
-        paintLegend(null);
+        paintLegend();
+        reportData();
         return;
       }
-      if (state.forwardCb) {
-        state.forwardCb([], false);
-        state.forwardCb = null;
-        state.loadingMore = false;
-      }
+      releaseLoadMore();
+      clearCrosshair();
       const current = chart.getSymbol();
       const digits = inferDigits(state.candles);
       if (!current || current.ticker !== state.symbol || current.pricePrecision !== digits) reloadSymbol();
       else chart.resetData();
-      paintLegend(null);
+      paintLegend();
+      reportData();
     },
     updateCandle(candle) {
       const last = state.candles[state.candles.length - 1];
@@ -709,16 +793,26 @@ export function createTradingChart(root: HTMLElement, options: TradingChartOptio
       const bar = toKLine(candle);
       if (state.realtimeCb) state.realtimeCb(bar);
       else if (!chart.getDataList().length) chart.resetData();
-      paintLegend(null);
+      paintLegend();
+      reportData();
     },
     setInterval(interval) {
       if (interval === state.interval) return;
       state.interval = interval;
       state.candles = [];
+      releaseLoadMore();
+      clearCrosshair();
       markActiveInterval();
       chart.setPeriod(periodOf(interval));
       state.onIntervalChange?.(interval);
-      paintLegend(null);
+      paintLegend();
+      reportData();
+    },
+    setIntervals(intervals) {
+      const next = intervals.filter((interval) => (INTERVALS as readonly string[]).includes(interval));
+      state.intervals = next.length ? next : CHART_INTERVALS.slice();
+      ui.intervals.innerHTML = intervalButtons(state.intervals);
+      markActiveInterval();
     },
     setIndicators(indicators) {
       state.indicators = indicators.slice();
@@ -731,33 +825,51 @@ export function createTradingChart(root: HTMLElement, options: TradingChartOptio
     setTheme(theme) {
       state.theme = theme;
       applyStyles();
+      paintDepth();
     },
     setSymbol(symbol, exchangeLabel, marketType) {
+      const changed = symbol !== state.symbol;
       state.symbol = symbol;
       if (exchangeLabel != null) state.exchangeLabel = exchangeLabel;
       if (marketType) state.marketType = marketType;
+      if (changed) {
+        state.candles = [];
+        state.depth = { bids: [], asks: [] };
+        releaseLoadMore();
+        clearCrosshair();
+      }
       reloadSymbol();
-      paintLegend(null);
+      paintLegend();
+      paintDepth();
+      reportData();
     },
     setChartType(chartType) {
       state.chartType = chartType;
       ui.shell.classList.toggle('is-depth', chartType === 'depth');
-      if (chartType === 'depth') paintDepthChart(ui.depth, state.depth, state.colors, inferDigits(state.candles));
+      if (chartType === 'depth') paintDepth();
       else applyStyles();
     },
     setDepth(book) {
       state.depth = { bids: book.bids.slice(), asks: book.asks.slice() };
-      if (state.chartType === 'depth') paintDepthChart(ui.depth, state.depth, state.colors, inferDigits(state.candles));
+      paintDepth();
     },
     setScale(scale) {
       applyScale(scale);
     },
     setColors(colors) {
-      state.colors = { ...state.colors, ...colors };
+      state.colors = {
+        up: colors.up || state.colors.up,
+        down: colors.down || state.colors.down,
+        background: colors.background,
+        text: colors.text,
+        grid: colors.grid,
+      };
       applyStyles();
+      paintDepth();
+      paintLegend();
     },
     takeScreenshot() {
-      const dataUrl = chart.getConvertPictureUrl(true, 'png', screenshotBackground(state.theme));
+      const dataUrl = chart.getConvertPictureUrl(true, 'png', screenshotBackground(state.theme, state.colors));
       state.onScreenshot?.(dataUrl);
       return dataUrl;
     },
@@ -807,7 +919,7 @@ export function createTradingChart(root: HTMLElement, options: TradingChartOptio
     resize() {
       chart.resize();
       placeVolumeLegend();
-      if (state.chartType === 'depth') paintDepthChart(ui.depth, state.depth, state.colors, inferDigits(state.candles));
+      paintDepth();
     },
     destroy() {
       window.clearInterval(clockTimer);

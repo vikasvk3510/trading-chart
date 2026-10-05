@@ -1,19 +1,14 @@
-import type { ChartColors, ChartType, ThemeName } from 'tradingcandle-core';
+import { resolvePalette, withAlpha, type ChartColors, type ChartType, type ThemeName } from 'tradingcandle-core';
 import type { DeepPartial, Styles } from 'klinecharts';
-
-const GRID_DARK = '#1e2329';
-const GRID_LIGHT = '#e6e8eb';
-const AXIS_DARK = '#848e9c';
-const AXIS_LIGHT = '#5d6678';
 
 export function chartStyles(
   theme: ThemeName,
   colors: ChartColors,
   chartType: ChartType,
 ): DeepPartial<Styles> {
-  const dark = theme === 'dark';
-  const axis = dark ? AXIS_DARK : AXIS_LIGHT;
-  const grid = dark ? GRID_DARK : GRID_LIGHT;
+  const palette = resolvePalette(theme, colors);
+  const axis = palette.muted;
+  const grid = palette.grid;
   const lineMode = chartType === 'line';
   const candleType = chartType === 'bar' ? 'ohlc' : chartType === 'area' || lineMode ? 'area' : 'candle_solid';
 
@@ -91,6 +86,17 @@ export function chartStyles(
       tooltip: {
         showRule: 'none',
       },
+      bars: [
+        {
+          style: 'fill',
+          borderStyle: 'solid',
+          borderSize: 1,
+          borderDashedValue: [2, 2],
+          upColor: withAlpha(colors.up, 0.7),
+          downColor: withAlpha(colors.down, 0.7),
+          noChangeColor: axis,
+        },
+      ],
       lines: [{ color: '#5b8ff9', size: 1.5 }],
     },
     xAxis: {
@@ -123,15 +129,8 @@ export function chartStyles(
   };
 }
 
-export function screenshotBackground(theme: ThemeName): string {
-  return theme === 'dark' ? '#0b0e11' : '#ffffff';
+export function screenshotBackground(theme: ThemeName, colors: ChartColors): string {
+  return resolvePalette(theme, colors).background;
 }
 
-function hexAlpha(hex: string, alpha: number): string {
-  const value = hex.replace('#', '');
-  if (value.length !== 6) return hex;
-  const r = Number.parseInt(value.slice(0, 2), 16);
-  const g = Number.parseInt(value.slice(2, 4), 16);
-  const b = Number.parseInt(value.slice(4, 6), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
+const hexAlpha = withAlpha;

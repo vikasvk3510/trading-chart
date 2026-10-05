@@ -23,10 +23,14 @@ export type HostToChartMessage =
   | { type: 'setRange'; rangeMs: number }
   | { type: 'setLocked'; locked: boolean }
   | { type: 'setFullscreen'; enabled: boolean }
-  | { type: 'setSafeArea'; top: number; right: number; bottom: number; left: number };
+  | { type: 'setSafeArea'; top: number; right: number; bottom: number; left: number }
+  | { type: 'setIntervals'; intervals: Interval[] };
 
 export type ChartToHostMessage =
   | { type: 'ready' }
+  /** Sent when the chart goes from no candles to candles on screen, or back. */
+  | { type: 'dataState'; hasData: boolean; count: number }
+  | { type: 'chartTypeChange'; chartType: ChartType }
   | { type: 'intervalChange'; interval: Interval }
   | { type: 'loadMore'; oldestTime: number }
   | { type: 'crosshair'; candle: Candle | null }
@@ -55,10 +59,13 @@ const HOST_TYPES = new Set<HostToChartMessage['type']>([
   'setLocked',
   'setFullscreen',
   'setSafeArea',
+  'setIntervals',
 ]);
 
 const CHART_TYPES = new Set<ChartToHostMessage['type']>([
   'ready',
+  'dataState',
+  'chartTypeChange',
   'intervalChange',
   'loadMore',
   'crosshair',

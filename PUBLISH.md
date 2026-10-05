@@ -37,7 +37,7 @@ In `packages/native/package.json`, change `"version": "0.1.0"` to the next versi
 pnpm --filter tradingcandle-react-native exec npm pack --dry-run
 ```
 
-The list should include `dist/index.js`, `dist/index.cjs`, `dist/index.d.ts`, `chart.html`, `README.md`, and `PUBLISH.md`. It should not list `tradingcandle-core` or `klinecharts` under dependencies.
+The list should include `dist/index.js`, `dist/index.cjs`, `dist/index.d.ts`, `chart.html`, `README.md`, and `PUBLISH.md`. It should not list `@talkwallet/chart-core` or `klinecharts` under dependencies.
 
 ## 5. Publish
 

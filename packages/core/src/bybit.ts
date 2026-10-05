@@ -2,6 +2,9 @@ import { BYBIT_INTERVAL, type Candle, type Interval } from './types';
 
 export const BYBIT_KLINE_URL = 'https://api.bybit.com/v5/market/kline';
 export const BYBIT_SPOT_WS = 'wss://stream.bybit.com/v5/public/spot';
+export const BYBIT_LINEAR_WS = 'wss://stream.bybit.com/v5/public/linear';
+
+export type BybitCategory = 'spot' | 'linear';
 
 export type BybitKlineResponse = {
   retCode?: number;
@@ -16,11 +19,12 @@ export function bybitKlineUrl(
   interval: Interval,
   limit = 200,
   end?: number,
+  category: BybitCategory = 'spot',
 ): string | null {
   const bybitInterval = BYBIT_INTERVAL[interval];
   if (!bybitInterval) return null;
   const params = new URLSearchParams({
-    category: 'spot',
+    category,
     symbol,
     interval: bybitInterval,
     limit: String(limit),

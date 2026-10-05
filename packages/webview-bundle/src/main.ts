@@ -1,12 +1,45 @@
-import { DEFAULT_COLORS, decodeMessage, encodeMessage, isHostMessage } from 'tradingcandle-core';
+import {
+  DEFAULT_COLORS,
+  decodeMessage,
+  encodeMessage,
+  isHostMessage,
+  resolvePalette,
+} from 'tradingcandle-core';
 import { createTradingChart, type TradingChartApi } from 'tradingcandle-web/engine';
-import type { BridgeMessage, ChartToHostMessage, HostToChartMessage } from 'tradingcandle-core';
+import type {
+  BridgeMessage,
+  ChartColors,
+  ChartToHostMessage,
+  ChartType,
+  HostToChartMessage,
+  Interval,
+  ScaleMode,
+  ThemeName,
+} from 'tradingcandle-core';
+
+/** Set by the host before the page script runs so the first frame matches the app. */
+type InitialOptions = {
+  symbol?: string;
+  exchangeLabel?: string;
+  marketType?: string;
+  interval?: Interval;
+  intervals?: Interval[];
+  indicators?: string[];
+  theme?: ThemeName;
+  colors?: Partial<ChartColors>;
+  chartType?: ChartType;
+  scale?: ScaleMode;
+  showToolbar?: boolean;
+  showTimeframeBar?: boolean;
+  showVolume?: boolean;
+};
 
 type HostWindow = Window & {
   ReactNativeWebView?: { postMessage: (message: string) => void };
   webkit?: { messageHandlers?: { chart?: { postMessage: (message: string) => void } } };
   ChartBridge?: { postMessage: (message: string) => void };
   __twChartReceive?: (raw: string) => void;
+  __twChartInit?: InitialOptions;
 };
 
 const hostWindow = window as HostWindow;
@@ -28,25 +61,42 @@ function post(message: ChartToHostMessage): void {
   window.parent.postMessage(raw, '*');
 }
 
+window.addEventListener('error', (event) => {
+  post({ type: 'error', message: event.message || 'Chart script error' });
+});
+
+const init: InitialOptions = hostWindow.__twChartInit ?? {};
+const theme: ThemeName = init.theme ?? 'light';
+let pageTheme: ThemeName = theme;
+let pageColors: ChartColors = { ...DEFAULT_COLORS, ...init.colors };
+
+function paintPage(): void {
+  const background = resolvePalette(pageTheme, pageColors).background;
+  document.documentElement.style.background = background;
+  document.body.style.background = background;
+}
+paintPage();
+
 const root = document.getElementById('app');
 if (!root) {
   throw new Error('Chart root is missing');
 }
 
 const api: TradingChartApi = createTradingChart(root, {
-  symbol: 'BTCUSDT',
-  exchangeLabel: '',
-  marketType: 'Spot',
-  interval: '30m',
+  symbol: init.symbol ?? 'BTCUSDT',
+  exchangeLabel: init.exchangeLabel ?? '',
+  marketType: init.marketType ?? 'Spot',
+  interval: init.interval ?? '30m',
+  intervals: init.intervals,
   data: [],
-  indicators: ['VOL', 'SMA'],
-  theme: 'dark',
-  colors: DEFAULT_COLORS,
-  chartType: 'candle',
-  scale: 'auto',
-  showToolbar: true,
-  showTimeframeBar: true,
-  showVolume: true,
+  indicators: init.indicators ?? ['VOL', 'SMA'],
+  theme,
+  colors: pageColors,
+  chartType: init.chartType ?? 'candle',
+  scale: init.scale ?? 'auto',
+  showToolbar: init.showToolbar ?? true,
+  showTimeframeBar: init.showTimeframeBar ?? true,
+  showVolume: init.showVolume ?? true,
   embedded: true,
   smaPeriod: 9,
   volumeSmaPeriod: 9,
@@ -56,6 +106,8 @@ const api: TradingChartApi = createTradingChart(root, {
   onScreenshot: (dataUrl) => post({ type: 'screenshot', dataUrl }),
   onFullscreen: (enabled) => post({ type: 'fullscreen', enabled }),
   onError: (message) => post({ type: 'error', message }),
+  onDataState: (hasData, count) => post({ type: 'dataState', hasData, count }),
+  onChartTypeChange: (chartType) => post({ type: 'chartTypeChange', chartType }),
 });
 
 function apply(message: HostToChartMessage): void {
@@ -69,11 +121,16 @@ function apply(message: HostToChartMessage): void {
     case 'setInterval':
       api.setInterval(message.interval);
       break;
+    case 'setIntervals':
+      api.setIntervals(message.intervals);
+      break;
     case 'setIndicators':
       api.setIndicators(message.indicators);
       break;
     case 'setTheme':
       api.setTheme(message.theme);
+      pageTheme = message.theme;
+      paintPage();
       break;
     case 'setSymbol':
       api.setSymbol(message.symbol, message.exchangeLabel, message.marketType);
@@ -89,6 +146,8 @@ function apply(message: HostToChartMessage): void {
       break;
     case 'setColors':
       api.setColors(message.colors);
+      pageColors = message.colors;
+      paintPage();
       break;
     case 'takeScreenshot':
       api.takeScreenshot();
@@ -122,7 +181,11 @@ function apply(message: HostToChartMessage): void {
 function receive(raw: string): void {
   const message: BridgeMessage | null = decodeMessage(raw);
   if (!message || !isHostMessage(message)) return;
-  apply(message);
+  try {
+    apply(message);
+  } catch (error) {
+    post({ type: 'error', message: error instanceof Error ? error.message : String(error) });
+  }
 }
 
 hostWindow.__twChartReceive = receive;

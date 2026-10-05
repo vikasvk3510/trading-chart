@@ -79,7 +79,7 @@ export function EthChart() {
         marketType="Spot"
         interval="30m"
         data={candles}
-        theme="dark"
+        theme="light"
         colors={{ up: '#26a65b', down: '#e5484d' }}
         indicators={['VOL', 'SMA']}
         showToolbar
@@ -110,7 +110,109 @@ chartRef.current?.updateCandle({
 
 The same `time` updates the last bar. A newer `time` starts the next bar.
 
-Use `chartRef.current?.setData(candles)` when you load a new pair, such as switching from ETHUSDT to BTCUSDT. Set `key` on `TradingChart` to the pair name so the chart remounts.
+## Change pair
+
+Do not set `key` to the pair. A new key reloads the page. Change `symbol` and pass the new `data` (or call `chartRef.current?.setData(candles)`). The chart clears the previous pair's candles and book as soon as `symbol` changes, so the old market never lingers.
+
+## Loader
+
+The chart covers itself with a loader on the theme background until candles for the current `symbol` and `interval` are on screen. It shows again on pair or interval change.
+
+- `renderLoader={() => <YourLottie />}` replaces the spinner.
+- `loading={false}` hides it, for example when history came back empty or failed and you show your own retry.
+- `onRendered(hasCandles)` and `onReady()` report the same moments if you draw the loader yourself.
+
+The page paints white first (`theme` defaults to `light`). The WebView uses the theme background and `opacity: 0.99`, so it composites inside a ScrollView on iOS.
+
+## Colors
+
+`palette` selects a built-in set of theme and candle colors: `"Light"`, `"Black"`, or `"Green"`. The chart also hides the `1s` button unless you pass `intervals`.
+
+```tsx
+<TradingChart palette="Black" />
+<TradingChart palette="Green" />
+```
+
+`backgroundColor` sets the chart background on its own. It takes the same values as a React Native style: a name, hex, or `rgb()`.
+
+```tsx
+<TradingChart backgroundColor="red" />
+<TradingChart backgroundColor="#0d3b24" />
+```
+
+`colors` takes the candle colors and, optionally, the chart's background, text, and grid. `backgroundColor` wins when both are set.
+
+```tsx
+<TradingChart
+  theme="dark"
+  colors={{
+    up: '#20b26c',
+    down: '#ef454a',
+    background: '#000000', // chart, depth, toolbar, loader, and WebView background
+    text: '#e8fff1',       // optional: labels and axis text
+    grid: '#1f5c3d',       // optional: grid lines and borders
+  }}
+/>
+```
+
+Leave out `text` and `grid` and the chart picks readable ones from `background`: light text on a dark color, dark text on a light one. Leave out `background` and the `theme` background is used (white for `light`, `#0b0e11` for `dark`). The same colors apply to volume bars and the depth view.
+
+## Reload and errors
+
+`chartRef.current?.reload()` reloads the page and replays the symbol, candles, live bar, depth, interval, indicators, and the user's chart type. If the WebView process is killed, the chart reloads itself. `onError(message)` reports script and load errors.
+
+## Intervals
+
+Leave `1s` out of `intervals` unless you feed real 1-second bars:
+
+```tsx
+<TradingChart intervals={['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w', '1M']} />
+```
+
+## Market data
+
+Leave `data` out and the chart loads Bybit spot candles, trades, and the order book itself. `onPrice` is the last price. `onConnectionChange` is `'connecting'`, `'live'`, or `'offline'`.
+
+```tsx
+<TradingChart
+  symbol="BTCUSDT"
+  interval={interval}
+  onIntervalChange={setInterval}
+  onPrice={setPrice}
+  onConnectionChange={setStatus}
+/>
+```
+
+`feed="bybit"` is the default. A custom socket replaces it:
+
+```tsx
+<TradingChart
+  symbol="BTC_USDT"
+  interval={interval}
+  onIntervalChange={setInterval}
+  feed={{
+    provider: 'custom',
+    socketUrl: 'wss://example.com/candles',
+    historyUrl: 'https://example.com/klines',
+  }}
+/>
+```
+
+`https://host/socket.io/` is opened as Socket.IO v4. A `wss://` URL is a raw WebSocket. Set `event` to the Socket.IO event that carries candles, and `subscribe` when the server expects a join message. `{symbol}` and `{interval}` inside that message are filled in. History responses can be a Bybit kline body, `{ data: Candle[] }`, `{ candles: Candle[] }`, or a candle array. Live messages can be one candle or `{ bids, asks }`.
+
+Pass `data` and the chart stays controlled: it does not open a socket. `onLoadMore` is then yours.
+
+## Load older bars
+
+With the built-in feed, scrolling to the left edge loads older bars from `historyUrl` or Bybit. In controlled mode, `onLoadMore(oldestTime)` fires and you pass the merged array, older bars first, as `data` or through `setData`.
+
+## Crosshair
+
+`onCrosshairMove(candle)` fires with the bar under the finger, and with `null` when the crosshair clears. Live ticks do not clear an active crosshair.
+
+## Fullscreen
+
+`fullscreenMode="inline"` (the default) keeps the one WebView mounted and calls `onFullscreen(enabled)`. Grow the chart's container when it is `true`. `fullscreenMode="modal"` moves the chart into a `Modal`, which boots a second page and loses drawings.
 
 ## Depth
 
@@ -124,4 +226,4 @@ Use `chartRef.current?.setData(candles)` when you load a new pair, such as switc
 />
 ```
 
-Bids are highest price first. Asks are lowest price first.
+Bids are highest price first. Asks are lowest price first. Push each order-book update into `depth`. Until the book has levels, depth mode shows "Loading order book…" on the theme background.

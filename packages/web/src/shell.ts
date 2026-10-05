@@ -1,51 +1,47 @@
-import { INTERVALS, RANGE_MS, RANGE_PRESETS } from 'tradingcandle-core';
+import { CHART_INTERVALS, RANGE_MS, RANGE_PRESETS, type Interval, type ThemeName } from 'tradingcandle-core';
 
 export const CHART_STYLE_ID = 'twc-chart-styles';
 
 export const CHART_CSS = `
-.twc{box-sizing:border-box;display:flex;flex-direction:column;width:100%;height:100%;min-height:280px;background:#0b0e11;color:#d1d4dc;font:12px/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;position:relative;overflow:hidden;user-select:none}
+.twc{--twc-bg:#0b0e11;--twc-text:#d1d4dc;--twc-muted:#848e9c;--twc-border:#1e2329;--twc-panel:#161a1e;--twc-up:#26a65b;--twc-down:#e5484d;--twc-shadow:rgba(0,0,0,.35);box-sizing:border-box;display:flex;flex-direction:column;width:100%;height:100%;min-height:280px;background:var(--twc-bg);color:var(--twc-text);font:12px/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;position:relative;overflow:hidden;user-select:none}
 .twc *,.twc *::before,.twc *::after{box-sizing:border-box}
-.twc[data-theme="light"]{background:#fff;color:#131722}
-.twc-top,.twc-bottom{display:flex;align-items:center;gap:4px;padding:0 8px;flex:0 0 auto;border-color:#1e2329}
-.twc[data-theme="light"] .twc-top,.twc[data-theme="light"] .twc-bottom,.twc[data-theme="light"] .twc-tools{border-color:#e0e3eb}
-.twc-top{height:36px;border-bottom:1px solid #1e2329}
-.twc-bottom{height:32px;border-top:1px solid #1e2329;justify-content:space-between}
+.twc[data-theme="light"]{--twc-bg:#fff;--twc-text:#131722;--twc-muted:#5d6678;--twc-border:#e0e3eb;--twc-panel:#fff;--twc-shadow:transparent}
+.twc-top,.twc-bottom{display:flex;align-items:center;gap:4px;padding:0 8px;flex:0 0 auto;border-color:var(--twc-border)}
+.twc-top{height:36px;border-bottom:1px solid var(--twc-border)}
+.twc-bottom{height:32px;border-top:1px solid var(--twc-border);justify-content:space-between}
 .twc-intervals,.twc-ranges,.twc-actions,.twc-scales{display:flex;align-items:center;gap:2px;min-width:0}
 .twc-intervals{overflow:auto;scrollbar-width:none}
 .twc-intervals::-webkit-scrollbar{display:none}
-.twc-btn{appearance:none;border:0;background:transparent;color:#848e9c;height:26px;min-width:26px;padding:0 6px;border-radius:4px;cursor:pointer;font:inherit}
+.twc-btn{appearance:none;border:0;background:transparent;color:var(--twc-muted);height:26px;min-width:26px;padding:0 6px;border-radius:4px;cursor:pointer;font:inherit}
 .twc-btn:hover,.twc-btn.is-on{color:#f7a600}
 .twc-btn.is-on{font-weight:600}
 .twc-btn svg{display:block}
 .twc-actions{margin-left:auto;gap:0}
 .twc-body{flex:1;display:flex;min-height:0}
-.twc-tools{width:40px;border-right:1px solid #1e2329;display:flex;flex-direction:column;align-items:center;padding:4px 0;gap:2px;overflow:auto}
+.twc-tools{width:40px;border-right:1px solid var(--twc-border);display:flex;flex-direction:column;align-items:center;padding:4px 0;gap:2px;overflow:auto}
 .twc-tools .twc-btn{width:32px;height:32px;padding:0;display:grid;place-items:center}
 .twc-stage{position:relative;flex:1;min-width:0;min-height:0}
 .twc-canvas,.twc-depth{position:absolute;inset:0}
-.twc-depth{display:none;z-index:3;width:100%;height:100%;background:#0b0e11}
+.twc-depth{display:none;z-index:3;width:100%;height:100%;background:var(--twc-bg)}
 .twc.is-depth .twc-depth{display:block}
 .twc.is-depth .twc-canvas,.twc.is-depth .twc-legend,.twc.is-depth .twc-vol{visibility:hidden}
 .twc.is-depth .twc-tools,.twc.is-depth .twc-bottom{display:none}
-.twc-legend,.twc-vol{position:absolute;z-index:2;pointer-events:none;left:12px;text-shadow:0 1px 0 rgba(0,0,0,.35)}
+.twc-legend,.twc-vol{position:absolute;z-index:2;pointer-events:none;left:12px;text-shadow:0 1px 0 var(--twc-shadow)}
 .twc-legend{top:8px}
-.twc-title{color:#d1d4dc;font-size:13px;margin-bottom:2px}
-.twc[data-theme="light"] .twc-title{color:#131722}
+.twc-title{color:var(--twc-text);font-size:13px;margin-bottom:2px}
 .twc-ohlc{display:flex;flex-wrap:wrap;gap:8px;font-variant-numeric:tabular-nums}
 .twc-ohlc b{font-weight:500}
-.twc-up{color:#26a65b}
-.twc-down{color:#e5484d}
-.twc-vol{display:flex;gap:8px;color:#848e9c}
+.twc-up{color:var(--twc-up)}
+.twc-down{color:var(--twc-down)}
+.twc-vol{display:flex;gap:8px;color:var(--twc-muted)}
 .twc-vol b{color:#5b8ff9;font-weight:500}
-.twc-clock{margin-left:auto;color:#848e9c;font-variant-numeric:tabular-nums;padding:0 8px}
-.twc-pop{position:absolute;z-index:6;min-width:180px;max-width:260px;background:#161a1e;border:1px solid #2a2e39;border-radius:8px;padding:8px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
-.twc[data-theme="light"] .twc-pop{background:#fff;border-color:#e0e3eb}
+.twc-clock{margin-left:auto;color:var(--twc-muted);font-variant-numeric:tabular-nums;padding:0 8px}
+.twc-pop{position:absolute;z-index:6;min-width:180px;max-width:260px;background:var(--twc-panel);border:1px solid var(--twc-border);border-radius:8px;padding:8px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
 .twc-pop[hidden]{display:none}
 .twc-pop button,.twc-pop label{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:transparent;border:0;color:inherit;padding:6px 4px;cursor:pointer;font:inherit}
 .twc-pop button:hover{color:#f7a600}
-.twc-pop input[type="number"],.twc-pop input[type="text"]{width:100%;background:#0b0e11;color:inherit;border:1px solid #2a2e39;border-radius:4px;padding:6px}
-.twc-date{background:#0b0e11;color:inherit;border:1px solid #2a2e39;border-radius:4px;padding:2px 4px;font:inherit}
-.twc[data-theme="light"] .twc-date,.twc[data-theme="light"] .twc-pop input{background:#fff;border-color:#e0e3eb}
+.twc-pop input[type="number"],.twc-pop input[type="text"]{width:100%;background:var(--twc-bg);color:inherit;border:1px solid var(--twc-border);border-radius:4px;padding:6px}
+.twc-date{background:var(--twc-bg);color:inherit;border:1px solid var(--twc-border);border-radius:4px;padding:2px 4px;font:inherit}
 .twc-emoji{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
 .twc-emoji button{justify-content:center;font-size:18px}
 .twc-grow{flex:1}
@@ -105,8 +101,22 @@ export function ensureChartStyles(): void {
   document.head.appendChild(style);
 }
 
-export function renderShell(root: HTMLElement): {
+export function intervalButtons(intervals: readonly Interval[]): string {
+  return intervals
+    .map(
+      (interval) =>
+        `<button type="button" class="twc-btn" data-interval="${interval}">${interval}</button>`,
+    )
+    .join('');
+}
+
+export function renderShell(
+  root: HTMLElement,
+  theme: ThemeName = 'dark',
+  intervalList: readonly Interval[] = CHART_INTERVALS,
+): {
   shell: HTMLElement;
+  intervals: HTMLElement;
   canvas: HTMLElement;
   depth: HTMLCanvasElement;
   legend: HTMLElement;
@@ -119,11 +129,8 @@ export function renderShell(root: HTMLElement): {
   root.innerHTML = '';
   const shell = document.createElement('div');
   shell.className = 'twc';
-  shell.dataset.theme = 'dark';
-  const intervals = INTERVALS.map(
-    (interval) =>
-      `<button type="button" class="twc-btn" data-interval="${interval}">${interval}</button>`,
-  ).join('');
+  shell.dataset.theme = theme;
+  const intervals = intervalButtons(intervalList);
   const tools = [
     ['crosshair', 'cross', 'Crosshair'],
     ['trendLine', 'trend', 'Trend line'],
@@ -180,6 +187,7 @@ export function renderShell(root: HTMLElement): {
     </div>
   `;
   root.appendChild(shell);
+  const intervalBar = shell.querySelector('.twc-intervals');
   const canvas = shell.querySelector('.twc-canvas');
   const depth = shell.querySelector('.twc-depth');
   const legend = shell.querySelector('.twc-legend');
@@ -188,6 +196,7 @@ export function renderShell(root: HTMLElement): {
   const clock = shell.querySelector('.twc-clock');
   const dateInput = shell.querySelector('.twc-date');
   if (
+    !intervalBar ||
     !canvas ||
     !(depth instanceof HTMLCanvasElement) ||
     !legend ||
@@ -200,6 +209,7 @@ export function renderShell(root: HTMLElement): {
   }
   return {
     shell,
+    intervals: intervalBar as HTMLElement,
     canvas: canvas as HTMLElement,
     depth,
     legend: legend as HTMLElement,

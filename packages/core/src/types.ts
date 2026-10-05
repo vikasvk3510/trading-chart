@@ -65,6 +65,12 @@ export type MarketType = 'Spot' | 'Linear' | 'Inverse' | string;
 export type ChartColors = {
   up: string;
   down: string;
+  /** Page, chart, and depth background. Defaults to the theme background. */
+  background?: string;
+  /** Labels, legend, and axis text. Derived from `background` when left out. */
+  text?: string;
+  /** Grid lines, separators, and borders. Derived from `text` when left out. */
+  grid?: string;
 };
 
 export const DEFAULT_COLORS: ChartColors = {

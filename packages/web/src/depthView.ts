@@ -1,14 +1,15 @@
-import { formatNumber, type ChartColors, type DepthBook, type DepthLevel } from 'tradingcandle-core';
+import {
+  formatNumber,
+  type ChartColors,
+  type DepthBook,
+  type DepthLevel,
+  type Palette,
+  withAlpha,
+} from 'tradingcandle-core';
 
 type Point = { price: number; size: number };
 
-function hexAlpha(hex: string, alpha: number): string {
-  const value = hex.replace('#', '');
-  const r = Number.parseInt(value.slice(0, 2), 16);
-  const g = Number.parseInt(value.slice(2, 4), 16);
-  const b = Number.parseInt(value.slice(4, 6), 16);
-  return `rgba(${r},${g},${b},${alpha})`;
-}
+const hexAlpha = withAlpha;
 
 function formatSize(value: number): string {
   if (!Number.isFinite(value) || value <= 0) return '0';
@@ -49,11 +50,18 @@ function stepSeries(levels: DepthLevel[], side: 'bid' | 'ask'): Point[] {
   return points;
 }
 
+function usable(levels: DepthLevel[]): DepthLevel[] {
+  return levels.filter(
+    (level) => Number.isFinite(level.price) && Number.isFinite(level.size) && level.size > 0,
+  );
+}
+
 export function paintDepthChart(
   canvas: HTMLCanvasElement,
   book: DepthBook,
   colors: ChartColors,
   digits: number,
+  palette: Palette,
 ): void {
   const parent = canvas.parentElement;
   if (!parent) return;
@@ -69,15 +77,19 @@ export function paintDepthChart(
   if (!ctx) return;
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   ctx.clearRect(0, 0, width, height);
-  ctx.fillStyle = '#0b0e11';
+  ctx.fillStyle = palette.background;
   ctx.fillRect(0, 0, width, height);
 
-  const bids = stepSeries(book.bids, 'bid');
-  const asks = stepSeries(book.asks, 'ask');
+  const bidLevels = usable(book.bids);
+  const askLevels = usable(book.asks);
+  const bids = stepSeries(bidLevels, 'bid');
+  const asks = stepSeries(askLevels, 'ask');
   if (bids.length === 0 && asks.length === 0) {
-    ctx.fillStyle = '#848e9c';
+    ctx.fillStyle = palette.muted;
     ctx.font = '13px -apple-system, BlinkMacSystemFont, sans-serif';
-    ctx.fillText('Waiting for depth', 16, 28);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Loading order book…', width / 2, height / 2);
     return;
   }
 
@@ -123,20 +135,20 @@ export function paintDepthChart(
   fill(bids, colors.up);
   fill(asks, colors.down);
 
-  const bestBid = book.bids[0]?.price;
-  const bestAsk = book.asks[0]?.price;
+  const bestBid = bidLevels.length ? Math.max(...bidLevels.map((level) => level.price)) : undefined;
+  const bestAsk = askLevels.length ? Math.min(...askLevels.map((level) => level.price)) : undefined;
   const mid =
     bestBid != null && bestAsk != null ? (bestBid + bestAsk) / 2 : (bestBid ?? bestAsk ?? (minPrice + maxPrice) / 2);
   const midX = xOf(mid);
   ctx.beginPath();
   ctx.moveTo(midX, padTop);
   ctx.lineTo(midX, baseline);
-  ctx.strokeStyle = 'rgba(234,236,239,0.45)';
+  ctx.strokeStyle = withAlpha(palette.text, 0.4);
   ctx.lineWidth = 1;
   ctx.stroke();
 
   ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
-  ctx.fillStyle = '#848e9c';
+  ctx.fillStyle = palette.muted;
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
   const ticks = 5;
@@ -149,7 +161,7 @@ export function paintDepthChart(
   ctx.textBaseline = 'top';
   const labels = [
     { x: padLeft, align: 'left' as const, price: minPrice, color: colors.up },
-    { x: midX, align: 'center' as const, price: mid, color: '#eaecef' },
+    { x: midX, align: 'center' as const, price: mid, color: palette.text },
     { x: width - padRight, align: 'right' as const, price: maxPrice, color: colors.down },
   ];
   for (const label of labels) {

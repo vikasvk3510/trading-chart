@@ -27,15 +27,20 @@ export type TradingChartOptions = {
   embedded: boolean;
   smaPeriod: number;
   volumeSmaPeriod: number;
+  /** Timeframe buttons to show. Defaults to every interval. */
+  intervals?: Interval[];
   onIntervalChange?: (interval: Interval) => void;
   onLoadMore?: (oldestTime: number) => void;
   onCrosshairMove?: (candle: Candle | null) => void;
   onScreenshot?: (dataUrl: string) => void;
   onFullscreen?: (enabled: boolean) => void;
   onError?: (message: string) => void;
+  onDataState?: (hasData: boolean, count: number) => void;
+  onChartTypeChange?: (chartType: ChartType) => void;
 };
 
 export type TradingChartApi = {
+  setIntervals: (intervals: Interval[]) => void;
   setData: (data: Candle[]) => void;
   updateCandle: (candle: Candle) => void;
   setInterval: (interval: Interval) => void;
@@ -75,6 +80,7 @@ export type TradingChartProps = {
   showVolume?: boolean;
   smaPeriod?: number;
   volumeSmaPeriod?: number;
+  intervals?: Interval[];
   className?: string;
   style?: CSSProperties;
   onIntervalChange?: (interval: Interval) => void;

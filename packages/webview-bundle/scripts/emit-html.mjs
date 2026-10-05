@@ -3,7 +3,31 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const html = readFileSync(resolve(here, '../dist/index.html'), 'utf8');
+const built = readFileSync(resolve(here, '../dist/index.html'), 'utf8');
+
+/**
+ * WKWebView loadHTMLString often skips inline type="module" scripts, which leaves
+ * a blank page on iOS. Ship the bundle as a classic script at the end of <body>
+ * so it runs after #app exists and works in every WebView.
+ */
+function toClassicScript(html) {
+  const open = html.search(/<script\b[^>]*type="module"[^>]*>/);
+  if (open === -1) throw new Error('Built chart HTML has no module script to convert');
+  const openEnd = html.indexOf('>', open) + 1;
+  const close = html.indexOf('</script>', openEnd);
+  if (close === -1) throw new Error('Built chart HTML has an unterminated script');
+  const code = html.slice(openEnd, close);
+  if (/\bimport\.meta\b/.test(code) || /^\s*(import|export)\s/m.test(code)) {
+    throw new Error('Chart bundle still uses ES module syntax; it cannot run as a classic script');
+  }
+  const withoutModule = html.slice(0, open) + html.slice(close + '</script>'.length);
+  const bodyEnd = withoutModule.lastIndexOf('</body>');
+  if (bodyEnd === -1) throw new Error('Built chart HTML has no </body>');
+  const classic = `<script>(function(){"use strict";\n${code}\n})();</script>\n  `;
+  return withoutModule.slice(0, bodyEnd) + classic + withoutModule.slice(bodyEnd);
+}
+
+const html = toClassicScript(built);
 const escaped = html.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
 const nativeDir = resolve(here, '../../native');
 writeFileSync(

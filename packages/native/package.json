@@ -1,8 +1,8 @@
 {
-  "name": "tradingcandle-react-native",
-  "version": "0.1.1",
+  "name": "@vkpackge/tradingcandle-react-native",
+  "version": "0.2.0",
   "description": "React Native trading chart. The Bybit-style UI runs inside react-native-webview from one inline HTML file.",
-  "author": "vknpms",
+  "author": "vkpackge",
   "license": "Apache-2.0",
   "type": "module",
   "sideEffects": false,
@@ -18,6 +18,9 @@
   },
   "files": ["dist", "chart.html", "README.md", "PUBLISH.md", "USAGE.md"],
   "keywords": ["react-native", "webview", "klinechart", "bybit", "candlestick"],
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vikasvk3510/trading-chart.git",

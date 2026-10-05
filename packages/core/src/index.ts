@@ -42,10 +42,11 @@ export {
   bucketTrade,
 } from './candles';
 
-export type { BybitKlineResponse, BybitWsKline, BybitPublicTrade } from './bybit';
+export type { BybitKlineResponse, BybitWsKline, BybitPublicTrade, BybitCategory } from './bybit';
 export {
   BYBIT_KLINE_URL,
   BYBIT_SPOT_WS,
+  BYBIT_LINEAR_WS,
   bybitKlineUrl,
   bybitKlineTopic,
   bybitTradeTopic,
@@ -55,6 +56,24 @@ export {
 
 export type { OrderBook } from './orderbook';
 export { createOrderBook, bybitOrderbookTopic, parseBybitOrderbookMessage } from './orderbook';
+
+export type { ChartFeed, BybitChartFeed, CustomChartFeed, FeedUpdate } from './feed';
+export {
+  resolveFeed,
+  toWebSocketUrl,
+  historyRequestUrl,
+  fillFeedTemplate,
+  encodeSocketIoEvent,
+  decodeSocketIo,
+  parseHistoryBody,
+  parseFeedData,
+} from './feed';
+
+export type { ChartPaletteName, ChartPalette } from './palettes';
+export { CHART_PALETTES, CHART_INTERVALS, DEFAULT_INDICATORS } from './palettes';
+
+export type { Palette } from './palette';
+export { parseColor, withAlpha, resolvePalette } from './palette';
 
 export type { HostToChartMessage, ChartToHostMessage, BridgeMessage } from './protocol';
 export { encodeMessage, decodeMessage, isHostMessage, isChartMessage } from './protocol';
